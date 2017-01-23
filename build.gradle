@@ -1,14 +1,26 @@
-group 'com.github.olegkoskin'
-version '1.0-SNAPSHOT'
+subprojects {
+    apply plugin: 'groovy'
 
-apply plugin: 'java'
+    group 'com.github.olegkoskin'
+    version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.5
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-repositories {
-    mavenCentral()
-}
+    repositories {
+        mavenCentral()
+        jcenter()
 
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+        // Spock snapshots are available from the Sonatype OSS snapshot repository
+        maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+
+    dependencies {
+        compile 'edu.princeton.cs:algs4:1.0.2'
+        compile 'org.codehaus.groovy:groovy-all:2.4.8'
+        testCompile 'junit:junit:4.9'
+        testCompile 'org.spockframework:spock-core:1.1-groovy-2.4-rc-3'
+        testRuntime 'cglib:cglib-nodep:3.2.4'
+        testRuntime 'org.objenesis:objenesis:2.5.1'
+    }
 }

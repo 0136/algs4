@@ -1,1 +1,3 @@
 rootProject.name = 'algs4'
+
+include "percolation"
