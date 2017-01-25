@@ -2,14 +2,17 @@ package com.github.olegkoskin.algs4.percolation;
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Percolation {
     private int order;
-    private int virtualTopSite;
-    private int virtualBottomSite;
-    private boolean[] states;
+    private List<EnumSet<SiteStatus>> states;
     private int openSiteCount;
+    private boolean percolated;
     private WeightedQuickUnionUF siteStorage;
 
     /**
@@ -24,15 +27,11 @@ public class Percolation {
 
         order = n;
 
-        virtualTopSite = 0;
-        virtualBottomSite = n * n + 1;
-
         openSiteCount = 0;
-        states = new boolean[n * n + 2];
-        siteStorage = new WeightedQuickUnionUF(n * n + 2);
-    }
-
-    public static void main(String[] args) {   // test client (optional)
+        states = Stream.generate(() -> EnumSet.noneOf(SiteStatus.class))
+                .limit(n * n + 1)
+                .collect(Collectors.toList());
+        siteStorage = new WeightedQuickUnionUF(n * n + 1);
     }
 
     /**
@@ -49,22 +48,51 @@ public class Percolation {
         }
 
         int siteIndex = toSiteIndex(row, col);
+        states.get(siteIndex).add(SiteStatus.OPEN);
 
         if (row == 1) {
-            siteStorage.union(virtualTopSite, siteIndex);
+            states.get(siteIndex).add(SiteStatus.CONNECT_TO_TOP);
         }
 
         if (row == order) {
-            siteStorage.union(virtualBottomSite, siteIndex);
+            states.get(siteIndex).add(SiteStatus.CONNECT_TO_BOTTOM);
         }
 
-        IntStream.of(toSiteIndex(row, col - 1), toSiteIndex(row - 1, col), toSiteIndex(row, col + 1), toSiteIndex(row + 1, col))
-                .filter(i -> i > 1 && i < virtualBottomSite)
-                .forEach(i -> connectIfFirstOpen(i, siteIndex));
+        EnumSet<SiteStatus> neighborStatuses = neighbors(row, col).build().boxed()
+                .flatMap(neighborIndex -> states.get(siteStorage.find(neighborIndex)).stream())
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(SiteStatus.class)));
 
-        states[toSiteIndex(row, col)] = true;
+        neighbors(row, col).build()
+                .forEach(neighborIndex -> connect(siteIndex, neighborIndex));
+
+        neighborStatuses.addAll(states.get(siteIndex));
+
+        states.get(siteStorage.find(siteIndex)).addAll(neighborStatuses);
+
+        percolated = neighborStatuses.containsAll(EnumSet.of(SiteStatus.CONNECT_TO_TOP, SiteStatus.CONNECT_TO_BOTTOM));
+
         openSiteCount++;
     }
+
+    private IntStream.Builder neighbors(int row, int col) {
+        IntStream.Builder builder = IntStream.builder();
+
+        if (row > 1 && isOpen(row - 1, col)) { // if the left site is open connect it to left site
+            builder.accept(toSiteIndex(row - 1, col));
+        }
+        if (row < order && isOpen(row + 1, col)) { // if the bottom site is open connect it to bottom site
+            builder.accept(toSiteIndex(row + 1, col));
+        }
+        if (col > 1 && isOpen(row, col - 1)) { // if the left site is open connect it to left site
+            builder.accept(toSiteIndex(row, col - 1));
+        }
+        if (col < order && isOpen(row, col + 1)) { // if the right site is open connect it to right site
+            builder.accept(toSiteIndex(row, col + 1));
+        }
+
+        return builder;
+    }
+
 
     /**
      * @param row index
@@ -72,7 +100,7 @@ public class Percolation {
      * @return is site (row, col) open.
      */
     public boolean isOpen(int row, int col) {
-        return states[toSiteIndex(row, col)];
+        return states.get(toSiteIndex(row, col)).contains(SiteStatus.OPEN);
     }
 
     /**
@@ -81,7 +109,7 @@ public class Percolation {
      * @return is site (row, col) full?
      */
     public boolean isFull(int row, int col) {
-        return siteStorage.connected(virtualTopSite, toSiteIndex(row, col));
+        return states.get(siteStorage.find(toSiteIndex(row, col))).contains(SiteStatus.CONNECT_TO_TOP);
     }
 
     /**
@@ -94,12 +122,12 @@ public class Percolation {
     /**
      * @return true is the system percolate, otherwise false.
      */
-    public boolean percolates() {             // does the system percolate?
-        return siteStorage.connected(virtualTopSite, virtualBottomSite);
+    public boolean percolates() {
+        return percolated;
     }
 
     private int toSiteIndex(int row, int col) {
-        return order * --row + col;
+        return order * (row - 1) + col;
     }
 
     private void checkRange(int row, int col) {
@@ -118,5 +146,17 @@ public class Percolation {
         }
 
         siteStorage.union(siteIndex1, siteIndex2);
+    }
+
+    private void connect(int siteIndex1, int siteIndex2) {
+        if (siteStorage.connected(siteIndex1, siteIndex2)) {
+            return;
+        }
+
+        siteStorage.union(siteIndex1, siteIndex2);
+    }
+
+    private enum SiteStatus {
+        OPEN, CONNECT_TO_TOP, CONNECT_TO_BOTTOM;
     }
 }

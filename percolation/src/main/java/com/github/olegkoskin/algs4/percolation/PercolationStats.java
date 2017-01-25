@@ -38,8 +38,8 @@ public class PercolationStats {
 
     // test client (described below)
     public static void main(String[] args) {
-        int n = Integer.valueOf(args[0]);
-        int trials = Integer.valueOf(args[1]);
+        int n = Integer.parseInt(args[0]);
+        int trials = Integer.parseInt(args[1]);
 
         PercolationStats percStats = new PercolationStats(n, trials);
 
