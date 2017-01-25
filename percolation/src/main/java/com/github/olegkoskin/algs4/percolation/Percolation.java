@@ -66,7 +66,8 @@ public class Percolation {
 
         states[siteStorage.find(siteIndex)] |= neighborStatuses;
 
-        percolated = ((neighborStatuses & CONNECT_TO_TOP) == CONNECT_TO_TOP && (neighborStatuses & CONNECT_TO_BOTTOM) == CONNECT_TO_BOTTOM);
+        percolated = ((neighborStatuses & CONNECT_TO_TOP) == CONNECT_TO_TOP
+                && (neighborStatuses & CONNECT_TO_BOTTOM) == CONNECT_TO_BOTTOM);
 
         openSiteCount++;
     }
