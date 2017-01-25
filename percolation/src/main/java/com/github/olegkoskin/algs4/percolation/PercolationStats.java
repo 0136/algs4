@@ -5,7 +5,8 @@ import edu.princeton.cs.algs4.StdStats;
 
 public class PercolationStats {
     private int t;
-    private double[] results;
+    private double[] means;
+    private int size;
 
     /**
      * Perform trials independent experiments on an n-by-n grid.
@@ -19,20 +20,29 @@ public class PercolationStats {
         }
 
         t = trials;
-        results = new double[t];
+        size = n * n;
+        means = new double[t];
 
-        for (int i = 0; i < t; i++) {
-            Percolation perc = new Percolation(n);
+        for (int i = 0; i < t; ++i) {
+            Percolation percolation = new Percolation(n);
 
             for (int j = 0; j < n * n; j++) {
-                perc.open(StdRandom.uniform(1, n + 1), StdRandom.uniform(1, n + 1));
 
-                if (perc.percolates()) {
+                int row = StdRandom.uniform(1, n + 1);
+                int col = StdRandom.uniform(1, n + 1);
+
+                if (percolation.isOpen(row, col)) {
+                    continue;
+                }
+
+                percolation.open(row, col);
+
+                if (percolation.percolates()) {
                     break;
                 }
             }
 
-            results[i] = 1. * perc.numberOfOpenSites() / (n * n);
+            means[i] = (double) percolation.numberOfOpenSites() / size;
         }
     }
 
@@ -52,14 +62,14 @@ public class PercolationStats {
      * @return sample mean of percolation threshold.
      */
     public double mean() {
-        return StdStats.mean(results);
+        return StdStats.mean(means);
     }
 
     /**
      * @return sample standard deviation of percolation threshold.
      */
     public double stddev() {
-        return StdStats.stddev(results);
+        return StdStats.stddev(means);
     }
 
     /**

@@ -2,15 +2,15 @@ package com.github.olegkoskin.algs4.percolation;
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class Percolation {
+    private static final int OPEN = 1;
+    private static final int CONNECT_TO_TOP = 2;
+    private static final int CONNECT_TO_BOTTOM = 4;
+
     private int order;
-    private List<EnumSet<SiteStatus>> states;
+    private int[] states;
     private int openSiteCount;
     private boolean percolated;
     private WeightedQuickUnionUF siteStorage;
@@ -27,10 +27,7 @@ public class Percolation {
 
         order = n;
 
-        openSiteCount = 0;
-        states = Stream.generate(() -> EnumSet.noneOf(SiteStatus.class))
-                .limit(n * n + 1)
-                .collect(Collectors.toList());
+        states = new int[n * n + 1];
         siteStorage = new WeightedQuickUnionUF(n * n + 1);
     }
 
@@ -48,28 +45,28 @@ public class Percolation {
         }
 
         int siteIndex = toSiteIndex(row, col);
-        states.get(siteIndex).add(SiteStatus.OPEN);
+        states[siteIndex] |= OPEN;
 
         if (row == 1) {
-            states.get(siteIndex).add(SiteStatus.CONNECT_TO_TOP);
+            states[siteIndex] |= CONNECT_TO_TOP;
         }
 
         if (row == order) {
-            states.get(siteIndex).add(SiteStatus.CONNECT_TO_BOTTOM);
+            states[siteIndex] |= CONNECT_TO_BOTTOM;
         }
 
-        EnumSet<SiteStatus> neighborStatuses = neighbors(row, col).build().boxed()
-                .flatMap(neighborIndex -> states.get(siteStorage.find(neighborIndex)).stream())
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(SiteStatus.class)));
+        int neighborStatuses = neighbors(row, col).build().boxed()
+                .map(i -> states[siteStorage.find(i)])
+                .reduce(0, (a, b) -> a | b);
 
         neighbors(row, col).build()
                 .forEach(neighborIndex -> connect(siteIndex, neighborIndex));
 
-        neighborStatuses.addAll(states.get(siteIndex));
+        neighborStatuses |= states[siteIndex];
 
-        states.get(siteStorage.find(siteIndex)).addAll(neighborStatuses);
+        states[siteStorage.find(siteIndex)] |= neighborStatuses;
 
-        percolated = neighborStatuses.containsAll(EnumSet.of(SiteStatus.CONNECT_TO_TOP, SiteStatus.CONNECT_TO_BOTTOM));
+        percolated = ((neighborStatuses & CONNECT_TO_TOP) == CONNECT_TO_TOP && (neighborStatuses & CONNECT_TO_BOTTOM) == CONNECT_TO_BOTTOM);
 
         openSiteCount++;
     }
@@ -100,7 +97,9 @@ public class Percolation {
      * @return is site (row, col) open.
      */
     public boolean isOpen(int row, int col) {
-        return states.get(toSiteIndex(row, col)).contains(SiteStatus.OPEN);
+        checkRange(row, col);
+
+        return (states[toSiteIndex(row, col)] & OPEN) == OPEN;
     }
 
     /**
@@ -109,7 +108,9 @@ public class Percolation {
      * @return is site (row, col) full?
      */
     public boolean isFull(int row, int col) {
-        return states.get(siteStorage.find(toSiteIndex(row, col))).contains(SiteStatus.CONNECT_TO_TOP);
+        checkRange(row, col);
+
+        return (states[siteStorage.find(toSiteIndex(row, col))] & CONNECT_TO_TOP) == CONNECT_TO_TOP;
     }
 
     /**
@@ -140,23 +141,11 @@ public class Percolation {
         }
     }
 
-    private void connectIfFirstOpen(int siteIndex1, int siteIndex2) {
-        if (!isOpen(1 + siteIndex1 / order, siteIndex1 % order) || siteStorage.connected(siteIndex1, siteIndex2)) {
-            return;
-        }
-
-        siteStorage.union(siteIndex1, siteIndex2);
-    }
-
     private void connect(int siteIndex1, int siteIndex2) {
         if (siteStorage.connected(siteIndex1, siteIndex2)) {
             return;
         }
 
         siteStorage.union(siteIndex1, siteIndex2);
-    }
-
-    private enum SiteStatus {
-        OPEN, CONNECT_TO_TOP, CONNECT_TO_BOTTOM;
     }
 }
