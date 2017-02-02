@@ -3,7 +3,7 @@ package com.github.olegkoskin.algs4.queue
 import spock.lang.Specification
 
 class DequeTest extends Specification {
-    Deque<String> deque = new Deque<>()
+    def deque = new Deque<String>()
 
     def "New created deque should be empty"() {
         expect:
@@ -112,5 +112,16 @@ class DequeTest extends Specification {
 
         then:
         string == "test3"
+    }
+
+    def "Should correct connect first and last items"() {
+        given:
+        deque.addFirst("test")
+
+        when:
+        def string = deque.removeLast()
+
+        then:
+        string == "test"
     }
 }
