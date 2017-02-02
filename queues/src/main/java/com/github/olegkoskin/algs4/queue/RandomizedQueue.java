@@ -7,9 +7,6 @@ public class RandomizedQueue<E> implements Iterable<E> {
     public RandomizedQueue() {
     }
 
-    public static void main(String[] args) {
-    }
-
     /**
      * @return true is the queue is empty
      */
