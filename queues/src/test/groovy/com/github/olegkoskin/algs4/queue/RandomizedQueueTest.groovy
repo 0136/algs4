@@ -94,10 +94,14 @@ class RandomizedQueueTest extends Specification {
         queue.enqueue("test3")
 
         when:
-        def item = queue.dequeue()
+        def item1 = queue.dequeue()
+        def item2 = queue.dequeue()
+        def item3 = queue.dequeue()
 
         then:
-        queue.size() == 2
-        item in ["test1", "test2", "test3"]
+        queue.size() == 0
+        item1 in ["test1", "test2", "test3"]
+        item2 in ["test1", "test2", "test3"]
+        item3 in ["test1", "test2", "test3"]
     }
 }

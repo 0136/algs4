@@ -60,6 +60,11 @@ public class RandomizedQueue<E> implements Iterable<E> {
         array[index] = null;
         size--;
 
+        int numMoved = size - index - 1;
+        if (numMoved > 0) {
+            System.arraycopy(array, index + 1, array, index, numMoved);
+        }
+
         if (size > 0 && size == array.length / 4) {
             resize(array.length / 2);
         }
