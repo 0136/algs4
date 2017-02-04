@@ -104,4 +104,30 @@ class RandomizedQueueTest extends Specification {
         item2 in ["test1", "test2", "test3"]
         item3 in ["test1", "test2", "test3"]
     }
+
+    def "Should return non-null result after sequence of operations"() {
+        expect:
+        queue.isEmpty()
+
+        when:
+        queue.enqueue("12")
+        then:
+        queue.sample() == "12"
+        queue.sample() == "12"
+
+        when:
+        queue.dequeue() == "12"
+        then:
+        queue.isEmpty()
+
+        when:
+        queue.enqueue("14")
+        queue.enqueue("45")
+        then:
+        queue.sample() != null
+        queue.sample() != null
+        queue.dequeue() != null
+        queue.sample() != null
+        queue.size() == 1
+    }
 }

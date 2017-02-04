@@ -101,17 +101,20 @@ class DequeTest extends Specification {
         string == "test3"
     }
 
-    def "Should remove and return last element from deque"() {
+    def "Should return correct value after the sequence of addFirst() and removeFirst()"() {
         given:
-        deque.addLast("test1")
-        deque.addLast("test2")
-        deque.addLast("test3")
+        deque.addFirst("LINTTTIQTQ")
+        deque.addFirst("UFWLWPKGOG")
+        deque.addFirst("DUTQSJABLO")
+        deque.removeFirst()
+        deque.addFirst("KDSMHIHZVZ")
+        deque.addFirst("UEPGYWJFYI")
+        deque.addFirst("VLPBSZACAB")
+        deque.addFirst("UTTTCMDFCZ")
+        deque.removeFirst()
 
-        when:
-        def string = deque.removeLast()
-
-        then:
-        string == "test3"
+        expect:
+        deque.removeFirst() == 'VLPBSZACAB'
     }
 
     def "Should correct connect first and last items"() {

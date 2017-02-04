@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public class Deque<E> implements Iterable<E> {
+public class Deque<Item> implements Iterable<Item> {
 
-    private Node<E> first;
-    private Node<E> last;
+    private Node<Item> first;
+    private Node<Item> last;
     private int size = 0;
 
     /**
@@ -29,10 +29,10 @@ public class Deque<E> implements Iterable<E> {
      *
      * @param e the item to the front
      */
-    public void addFirst(E e) {
+    public void addFirst(Item e) {
         Objects.requireNonNull(e);
 
-        Node<E> newNode = new Node<>(e, null, first);
+        Node<Item> newNode = new Node<>(e, null, first);
 
         if (first == null) {
             last = newNode;
@@ -49,10 +49,10 @@ public class Deque<E> implements Iterable<E> {
      *
      * @param e the item to add to the end
      */
-    public void addLast(E e) {
+    public void addLast(Item e) {
         Objects.requireNonNull(e);
 
-        Node<E> newItem = new Node<>(e, last, null);
+        Node<Item> newItem = new Node<>(e, last, null);
 
         if (last == null) {
             first = newItem;
@@ -69,13 +69,13 @@ public class Deque<E> implements Iterable<E> {
      *
      * @return the item from the front
      */
-    public E removeFirst() {
+    public Item removeFirst() {
         if (first == null) {
             throw new NoSuchElementException();
         }
 
-        E element = first.item;
-        Node<E> next = first.next;
+        Item element = first.item;
+        Node<Item> next = first.next;
 
         first.item = null;
         first.next = null;
@@ -85,6 +85,8 @@ public class Deque<E> implements Iterable<E> {
         } else {
             next.prev = null;
         }
+
+        first = next;
 
         size--;
 
@@ -96,19 +98,21 @@ public class Deque<E> implements Iterable<E> {
      *
      * @return the item from the end
      */
-    public E removeLast() {
+    public Item removeLast() {
         if (last == null) {
             throw new NoSuchElementException();
         }
 
-        E element = last.item;
-        Node<E> prev = last.prev;
+        Item element = last.item;
+        Node<Item> prev = last.prev;
 
         if (prev == null) {
             first = null;
         } else {
             prev.next = null;
         }
+
+        last = prev;
 
         size--;
 
@@ -118,24 +122,24 @@ public class Deque<E> implements Iterable<E> {
     /**
      * @return an iterator over items in order from front to end.
      */
-    public Iterator<E> iterator() {
+    public Iterator<Item> iterator() {
         return new DequeIterator();
     }
 
-    private static class Node<E> {
-        E item;
-        Node<E> prev;
-        Node<E> next;
+    private static class Node<Item> {
+        Item item;
+        Node<Item> prev;
+        Node<Item> next;
 
-        Node(E item, Node<E> prev, Node<E> next) {
+        Node(Item item, Node<Item> prev, Node<Item> next) {
             this.item = item;
             this.prev = prev;
             this.next = next;
         }
     }
 
-    private class DequeIterator implements Iterator<E> {
-        private Node<E> next;
+    private class DequeIterator implements Iterator<Item> {
+        private Node<Item> next;
 
         DequeIterator() {
             next = first;
@@ -147,12 +151,12 @@ public class Deque<E> implements Iterable<E> {
         }
 
         @Override
-        public E next() {
+        public Item next() {
             if (next == null) {
                 throw new NoSuchElementException();
             }
 
-            E element = next.item;
+            Item element = next.item;
             next = next.next;
 
             return element;

@@ -1,12 +1,13 @@
 package com.github.olegkoskin.algs4.queue;
 
+import edu.princeton.cs.algs4.StdRandom;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
 
-public class RandomizedQueue<E> implements Iterable<E> {
+public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private Object[] array;
     private int size;
@@ -34,7 +35,7 @@ public class RandomizedQueue<E> implements Iterable<E> {
      *
      * @param e to add
      */
-    public void enqueue(E e) {
+    public void enqueue(Item e) {
         Objects.requireNonNull(e);
 
         if (size == array.length) {
@@ -49,45 +50,44 @@ public class RandomizedQueue<E> implements Iterable<E> {
      * @return random item and remove it
      */
     @SuppressWarnings("unchecked")
-    public E dequeue() {
+    public Item dequeue() {
         if (isEmpty()) {
             throw new NoSuchElementException();
         }
 
-        int index = ThreadLocalRandom.current().nextInt(size);
+        int index = StdRandom.uniform(size);
         Object old = array[index];
-
-        array[index] = null;
-        size--;
 
         int numMoved = size - index - 1;
         if (numMoved > 0) {
             System.arraycopy(array, index + 1, array, index, numMoved);
         }
 
+        array[--size] = null;
+
         if (size > 0 && size == array.length / 4) {
             resize(array.length / 2);
         }
 
-        return (E) old;
+        return (Item) old;
     }
 
     /**
      * @return (but do not remove) a random item
      */
     @SuppressWarnings("unchecked")
-    public E sample() {
+    public Item sample() {
         if (isEmpty()) {
             throw new NoSuchElementException();
         }
 
-        return (E) array[ThreadLocalRandom.current().nextInt(size)];
+        return (Item) array[StdRandom.uniform(size)];
     }
 
     /**
      * @return an independent iterator over items in random order
      */
-    public Iterator<E> iterator() {
+    public Iterator<Item> iterator() {
         return new RandomIterator();
     }
 
@@ -95,21 +95,15 @@ public class RandomizedQueue<E> implements Iterable<E> {
         array = Arrays.copyOf(array, capacity);
     }
 
-    private class RandomIterator implements Iterator<E> {
+    private class RandomIterator implements Iterator<Item> {
         private int cursor;
         private int[] randomIndexes = new int[size];
 
         RandomIterator() {
-            ThreadLocalRandom localRandom = ThreadLocalRandom.current();
             for (int i = 0; i < size; i++) {
-                int randomIndex = -1;
-
-                while (exists(randomIndex, randomIndexes)) {
-                    randomIndex = localRandom.nextInt(size);
-                }
-
-                randomIndexes[i] = randomIndex;
+                randomIndexes[i] = i;
             }
+            StdRandom.shuffle(randomIndexes);
         }
 
         @Override
@@ -119,26 +113,12 @@ public class RandomizedQueue<E> implements Iterable<E> {
 
         @SuppressWarnings("unchecked")
         @Override
-        public E next() {
+        public Item next() {
             if (cursor >= size) {
                 throw new NoSuchElementException();
             }
 
-            return (E) array[randomIndexes[cursor++]];
-        }
-
-        private boolean exists(int number, int[] array) {
-            if (number == -1) {
-                return true;
-            }
-
-            for (int anArray : array) {
-                if (number == anArray) {
-                    return true;
-                }
-            }
-
-            return false;
+            return (Item) array[randomIndexes[cursor++]];
         }
     }
 }
