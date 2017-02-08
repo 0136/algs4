@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class BruteCollinearPoints {
-    private List<LineSegment> lineSegments;
+    private LineSegment[] lineSegments;
 
     /**
      * finds all line segments containing 4 points
@@ -23,7 +23,7 @@ public class BruteCollinearPoints {
             throw new IllegalArgumentException();
         }
 
-        lineSegments = new ArrayList<>();
+        List<LineSegment> segments = new ArrayList<>();
 
         for (int p = 0; p < copyPoints.length - 3; p++) {
             for (int q = p + 1; q < copyPoints.length - 2; q++) {
@@ -41,15 +41,19 @@ public class BruteCollinearPoints {
                             continue;
                         }
 
-                        lineSegments.add(new LineSegment(copyPoints[p], copyPoints[s]));
+                        segments.add(new LineSegment(copyPoints[p], copyPoints[s]));
                     }
                 }
             }
         }
+
+        lineSegments = segments.toArray(new LineSegment[0]);
     }
 
     private boolean hasDuplicates(Point[] points) {
         for (int i = 0; i < points.length - 1; i++) {
+            Objects.requireNonNull(points[i]);
+
             if (points[i].compareTo(points[i + 1]) == 0) {
                 return true;
             }
@@ -61,13 +65,13 @@ public class BruteCollinearPoints {
      * @return the number of line segments
      */
     public int numberOfSegments() {
-        return lineSegments.size();
+        return lineSegments.length;
     }
 
     /**
      * @return the line segments
      */
     public LineSegment[] segments() {
-        return lineSegments.toArray(new LineSegment[0]);
+        return lineSegments;
     }
 }
