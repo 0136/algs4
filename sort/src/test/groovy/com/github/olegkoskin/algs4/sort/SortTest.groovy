@@ -35,4 +35,14 @@ class SortTest extends Specification {
         [7, 10, 5, 3, 8, 4, 2, 9, 6, 1] | [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] || true
         [1, 2, 3, 4]                    | [4, 3, 2, 1]                    || false
     }
+
+    def "Shuffle sort"() {
+        expect:
+        Shuflle.sort(a).equals(b) == c
+
+        where:
+        a                            | b                            || c
+        [6, 5, 8, 7]                 | [5, 6, 7, 8]                 || false
+        [2, 3, 4, 5, 6, 7, 8, 9, 10] | [2, 3, 4, 5, 6, 7, 8, 9, 10] || false
+    }
 }
